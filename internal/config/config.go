@@ -1,6 +1,10 @@
 package config
 
-import "github.com/joho/godotenv"
+import (
+	"time"
+
+	"github.com/joho/godotenv"
+)
 
 func Load(path string) error {
 	if err := godotenv.Load(path); err != nil {
@@ -11,4 +15,12 @@ func Load(path string) error {
 
 type GRPCConfig interface {
 	Address() string
+}
+
+type JWTConfig interface {
+	RefreshTokenSecretKey() string
+	AccessTokenSecretKey() string
+
+	RefreshTokenExpiration() time.Duration
+	AccessTokenExpiration() time.Duration
 }

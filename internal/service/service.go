@@ -1,11 +1,13 @@
 package service
 
+import "context"
+
 type AuthService interface {
-	Login(string, string) string
-	GetRefreshToken(string) string
-	GetAccessToken(string) string
+	Login(context.Context, string, string) (string, error)
+	GetRefreshToken(context.Context, string) (string, error)
+	GetAccessToken(context.Context, string) (string, error)
 }
 
 type AccessService interface {
-	Check(string) error
+	Check(context.Context, string) error
 }

@@ -12,6 +12,8 @@ get-deps:
 	go get -u google.golang.org/grpc/
 	go get -u github.com/joho/godotenv
 	go get -u github.com/WithSoull/platform_common
+	go get -u github.com/WithSoull/UserServer
+	go get -u github.com/golang-jwt/jwt/v5
 
 generate-api:
 	make generate-api-access

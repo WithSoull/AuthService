@@ -1,22 +1,19 @@
 package auth
 
-import "github.com/WithSoull/AuthService/internal/service"
+import (
+	"github.com/WithSoull/AuthService/internal/service"
+	"github.com/WithSoull/AuthService/internal/tokens"
+	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
+)
 
 type authService struct {
+	userClient     desc_user.UserV1Client
+	tokenGenerator tokens.TokenGenerator
 }
 
-func (s *authService) Login(email, password string) string {
-	return ""
-}
-
-func (s *authService) GetRefreshToken(refresh_token string) string {
-	return ""
-}
-
-func (s *authService) GetAccessToken(refresh_token string) string {
-	return ""
-}
-
-func NewService() service.AuthService {
-	return &authService{}
+func NewService(userClient desc_user.UserV1Client, tokenGenerator tokens.TokenGenerator) service.AuthService {
+	return &authService{
+		userClient:     userClient,
+		tokenGenerator: tokenGenerator,
+	}
 }

@@ -7,7 +7,6 @@ import (
 	"net"
 
 	"github.com/WithSoull/AuthService/internal/config"
-	desc_access "github.com/WithSoull/AuthService/pkg/access/v1"
 	desc_auth "github.com/WithSoull/AuthService/pkg/auth/v1"
 	"github.com/WithSoull/platform_common/pkg/closer"
 	"google.golang.org/grpc"
@@ -83,7 +82,6 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	reflection.Register(a.grpcServer)
 
 	desc_auth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthHandler(ctx))
-	desc_access.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessHandler(ctx))
 
 	return nil
 }

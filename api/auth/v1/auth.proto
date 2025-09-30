@@ -2,12 +2,15 @@ syntax = "proto3";
 
 package auth_v1;
 
-stringoption go_package = "github.com/WithSoull/AuthService/pkg/auth/v1;auth_v1";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/WithSoull/AuthService/pkg/auth/v1;auth_v1";
 
 service AuthV1 {
   rpc Login (LoginRequest) returns (LoginResponse);
   rpc GetRefreshToken (GetRefreshTokenRequest) returns (GetRefreshTokenResponse);
   rpc GetAccessToken (GetAccessTokenRequest) returns (GetAccessTokenResponse);
+  rpc ValidateToken (google.protobuf.Empty) returns (google.protobuf.Empty);
 };
 
 

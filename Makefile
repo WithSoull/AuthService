@@ -16,17 +16,7 @@ get-deps:
 	go get -u github.com/golang-jwt/jwt/v5
 
 generate-api:
-	make generate-api-access
 	make generate-api-auth
-
-generate-api-access:
-	mkdir -p pkg/access/v1
-	protoc --proto_path api/access/v1 \
-	--go_out=pkg/access/v1 --go_opt=paths=source_relative \
-	--plugin=protoc-gen-go=bin/protoc-gen-go \
-	--go-grpc_out=pkg/access/v1 --go-grpc_opt=paths=source_relative \
-	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
-	api/access/v1/access.proto
 
 generate-api-auth:
 	mkdir -p pkg/auth/v1

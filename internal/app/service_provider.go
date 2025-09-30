@@ -9,10 +9,8 @@ import (
 
 	"github.com/WithSoull/AuthService/internal/config"
 	"github.com/WithSoull/AuthService/internal/config/env"
-	handler_access "github.com/WithSoull/AuthService/internal/handler/access"
 	handler_auth "github.com/WithSoull/AuthService/internal/handler/auth"
 	"github.com/WithSoull/AuthService/internal/service"
-	service_access "github.com/WithSoull/AuthService/internal/service/access"
 	service_auth "github.com/WithSoull/AuthService/internal/service/auth"
 	"github.com/WithSoull/AuthService/internal/tokens"
 	"github.com/WithSoull/AuthService/internal/tokens/jwt"
@@ -35,8 +33,7 @@ type serviceProvider struct {
 	authHandler   auth_v1.AuthV1Server
 	accessHandler access_v1.AccessV1Server
 
-	authService   service.AuthService
-	accessService service.AccessService
+	authService service.AuthService
 
 	tokenGenerator tokens.TokenGenerator
 
@@ -92,25 +89,11 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	return s.authService
 }
 
-func (s *serviceProvider) AccessService(ctx context.Context) service.AccessService {
-	if s.accessService == nil {
-		s.accessService = service_access.NewService()
-	}
-	return s.accessService
-}
-
 func (s *serviceProvider) AuthHandler(ctx context.Context) auth_v1.AuthV1Server {
 	if s.authHandler == nil {
 		s.authHandler = handler_auth.NewHandler(s.AuthService(ctx))
 	}
 	return s.authHandler
-}
-
-func (s *serviceProvider) AccessHandler(ctx context.Context) access_v1.AccessV1Server {
-	if s.accessHandler == nil {
-		s.accessHandler = handler_access.NewHandler(s.AccessService(ctx))
-	}
-	return s.accessHandler
 }
 
 func (s *serviceProvider) TokenGenerator(ctx context.Context) tokens.TokenGenerator {

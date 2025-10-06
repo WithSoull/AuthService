@@ -1,0 +1,12 @@
+services:
+  auth-service:
+    build: .
+    ports:
+      - "${GRPC_PORT}:${GRPC_PORT}"
+    networks:
+      - messenger-network
+    restart: unless-stopped
+
+networks:
+  messenger-network:
+    external: true

@@ -7,6 +7,14 @@ services:
       - messenger-network
     restart: unless-stopped
 
+  redis:
+    image: redis:7.2.5-alpine3.20
+    container_name: redis-container
+    ports:
+      - "${CACHE_PORT}:${CACHE_PORT}"
+    networks:
+      - messenger-network
+
 networks:
   messenger-network:
     external: true

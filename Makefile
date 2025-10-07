@@ -14,6 +14,8 @@ get-deps:
 	go get -u github.com/WithSoull/platform_common
 	go get -u github.com/WithSoull/UserServer
 	go get -u github.com/golang-jwt/jwt/v5
+	go get -u github.com/gomodule/redigo
+	go get -u github.com/gomodule/redigo/redis
 
 generate-api:
 	make generate-api-auth
@@ -32,3 +34,4 @@ rebuild:
 	docker compose down
 	docker compose build --no-cache
 	docker compose up -d
+	docker compose logs -f

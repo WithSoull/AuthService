@@ -1,4 +1,4 @@
-package validatorInterceptor
+package conditions
 
 import (
 	"context"

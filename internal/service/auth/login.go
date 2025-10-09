@@ -6,8 +6,8 @@ import (
 
 	// VI = Validator Interceptor
 
-	vi "github.com/WithSoull/AuthService/internal/interceptor/validator"
 	"github.com/WithSoull/AuthService/internal/model"
+	conditions "github.com/WithSoull/AuthService/internal/validator"
 	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
 	"github.com/WithSoull/platform_common/pkg/sys"
 	"github.com/WithSoull/platform_common/pkg/sys/codes"
@@ -17,7 +17,7 @@ import (
 func (s *authService) Login(ctx context.Context, email, password string) (string, error) {
 	err := validate.Validate(
 		ctx,
-		vi.ValidateNotEmptyEmailAndPassword(email, password),
+		conditions.ValidateNotEmptyEmailAndPassword(email, password),
 	)
 	if err != nil {
 		return "", err

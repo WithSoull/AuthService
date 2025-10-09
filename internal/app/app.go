@@ -7,8 +7,10 @@ import (
 	"net"
 
 	"github.com/WithSoull/AuthService/internal/config"
+	validatorInterceptor "github.com/WithSoull/AuthService/internal/interceptor/validator"
 	desc_auth "github.com/WithSoull/AuthService/pkg/auth/v1"
 	"github.com/WithSoull/platform_common/pkg/closer"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -77,7 +79,14 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				validatorInterceptor.ErrorCodesInterceptor,
+			),
+		),
+	)
 
 	reflection.Register(a.grpcServer)
 

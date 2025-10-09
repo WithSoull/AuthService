@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/WithSoull/AuthService/internal/config"
@@ -59,6 +60,7 @@ func (j *JWTService) generateToken(info model.UserInfo, duration time.Duration, 
 
 	signedToken, err := token.SignedString(secretKey)
 	if err != nil {
+		log.Printf("failed to sign %s token: %w", tokenType, err)
 		return "", fmt.Errorf("failed to sign %s token: %w", tokenType, err)
 	}
 
@@ -93,6 +95,8 @@ func (j *JWTService) verifyToken(tokenStr string, secretKey []byte, expectedType
 		&model.UserClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				err := fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+				log.Printf("[JWTService] failed to verifyToken: %v", err)
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
 			return secretKey, nil
@@ -100,7 +104,7 @@ func (j *JWTService) verifyToken(tokenStr string, secretKey []byte, expectedType
 	)
 	if err != nil {
 		switch {
-		case err == jwt.ErrTokenExpired: // Исправил ошибку - было ErrTokenNotValidYet
+		case err == jwt.ErrTokenExpired:
 			return nil, fmt.Errorf("token has expired")
 		case err == jwt.ErrTokenNotValidYet:
 			return nil, fmt.Errorf("token is not valid yet")

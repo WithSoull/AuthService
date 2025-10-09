@@ -4,32 +4,32 @@ import (
 	"context"
 	"log"
 
-	domainerrors "github.com/WithSoull/AuthService/internal/errors/domain"
+	// VI = Validator Interceptor
+
+	vi "github.com/WithSoull/AuthService/internal/interceptor/validator"
 	"github.com/WithSoull/AuthService/internal/model"
-	"github.com/WithSoull/AuthService/internal/utils"
 	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
+	"github.com/WithSoull/platform_common/pkg/sys"
+	"github.com/WithSoull/platform_common/pkg/sys/codes"
+	"github.com/WithSoull/platform_common/pkg/sys/validate"
 )
 
 func (s *authService) Login(ctx context.Context, email, password string) (string, error) {
+	err := validate.Validate(
+		ctx,
+		vi.ValidateNotEmptyEmailAndPassword(email, password),
+	)
+	if err != nil {
+		return "", err
+	}
+
 	// rate limiting validation
 	attempts, err := s.repository.GetLoginAttempts(ctx, email)
 	if err != nil {
-		isNeedToLog, grpcErr := domainerrors.ToGRPCStatus(err)
-		if isNeedToLog {
-			log.Printf("failed to get attempts: %v", err)
-		}
-		return "", grpcErr
+		return "", err
 	}
 	if attempts >= s.securityConfig.MaxLoginAttempts() {
-		_, grpcErr := domainerrors.ToGRPCStatus(domainerrors.ErrTooManyAttempts)
-		return "", grpcErr
-	}
-
-	// Validate user credentials
-	if !utils.IsValidEmail(email) || password == "" {
-		s.repository.IncrementLoginAttempts(ctx, email)
-		_, grpcErr := domainerrors.ToGRPCStatus(domainerrors.ErrInvalidCredentials)
-		return "", grpcErr
+		return "", sys.NewCommonError("Too many attempts", codes.ResourceExhausted)
 	}
 
 	// Check credentials
@@ -39,17 +39,12 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 	})
 	if err != nil {
 		s.repository.IncrementLoginAttempts(ctx, email)
-		isLogNeeded, grpcErr := domainerrors.ToGRPCStatus(err)
-		if isLogNeeded {
-			log.Printf("[Service Layer] failed to get user credentials: %v", err)
-		}
-		return "", grpcErr
+		return "", err
 	}
 
 	if !res.Valid {
 		s.repository.IncrementLoginAttempts(ctx, email)
-		_, grpcErr := domainerrors.ToGRPCStatus(domainerrors.ErrInvalidCredentials)
-		return "", grpcErr
+		return "", sys.NewCommonError("Ivalid email or password", codes.InvalidArgument)
 	}
 
 	// Reset attempts counter
@@ -64,8 +59,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 	})
 	if err != nil {
 		log.Printf("[Service Layer] failed to generate refresh token: %v", err)
-		_, grpcErr := domainerrors.ToGRPCStatus(err)
-		return "", grpcErr
+		return "", err
 	}
 
 	return refresh_token, nil

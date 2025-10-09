@@ -10,12 +10,15 @@ get-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	go get -u google.golang.org/grpc/
+	go get -u github.com/grpc-ecosystem/go-grpc-middleware
 	go get -u github.com/joho/godotenv
 	go get -u github.com/WithSoull/platform_common
 	go get -u github.com/WithSoull/UserServer
 	go get -u github.com/golang-jwt/jwt/v5
 	go get -u github.com/gomodule/redigo
 	go get -u github.com/gomodule/redigo/redis
+	go get -u github.com/pkg/errors
+	
 
 generate-api:
 	make generate-api-auth

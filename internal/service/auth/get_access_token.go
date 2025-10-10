@@ -3,15 +3,14 @@ package auth
 import (
 	"context"
 
+	domainerrors "github.com/WithSoull/AuthService/internal/errors/domain"
 	"github.com/WithSoull/AuthService/internal/model"
-	"github.com/WithSoull/platform_common/pkg/sys"
-	"github.com/WithSoull/platform_common/pkg/sys/codes"
 )
 
 func (s *authService) GetAccessToken(ctx context.Context, refresh_token string) (string, error) {
 	claims, err := s.tokenGenerator.VerifyRefreshToken(refresh_token)
 	if err != nil {
-		return "", sys.NewCommonError("ivalid refresh token", codes.Unauthenticated)
+		return "", domainerrors.ErrInvalidRefreshToken
 	}
 
 	new_access_token, err := s.tokenGenerator.GenerateAccessToken(model.UserInfo{

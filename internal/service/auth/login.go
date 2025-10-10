@@ -4,13 +4,10 @@ import (
 	"context"
 	"log"
 
-	// VI = Validator Interceptor
-
+	domainerrors "github.com/WithSoull/AuthService/internal/errors/domain"
 	"github.com/WithSoull/AuthService/internal/model"
 	conditions "github.com/WithSoull/AuthService/internal/validator"
 	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
-	"github.com/WithSoull/platform_common/pkg/sys"
-	"github.com/WithSoull/platform_common/pkg/sys/codes"
 	"github.com/WithSoull/platform_common/pkg/sys/validate"
 )
 
@@ -29,7 +26,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 		return "", err
 	}
 	if attempts >= s.securityConfig.MaxLoginAttempts() {
-		return "", sys.NewCommonError("Too many attempts", codes.ResourceExhausted)
+		return "", domainerrors.ErrTooManyAttempts
 	}
 
 	// Check credentials
@@ -44,7 +41,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 
 	if !res.Valid {
 		s.repository.IncrementLoginAttempts(ctx, email)
-		return "", sys.NewCommonError("Ivalid email or password", codes.InvalidArgument)
+		return "", domainerrors.ErrInvalidEmailOrPassword
 	}
 
 	// Reset attempts counter

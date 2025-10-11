@@ -15,11 +15,10 @@ type authService struct {
 	securityConfig config.SecurityConfig
 }
 
-func NewService(userClient desc_user.UserV1Client, tokenGenerator tokens.TokenGenerator, repository repository.AuthRepository, cfg config.SecurityConfig) service.AuthService {
+func NewService(userClient desc_user.UserV1Client, tokenGenerator tokens.TokenGenerator, repository repository.AuthRepository) service.AuthService {
 	return &authService{
 		userClient:     userClient,
 		tokenGenerator: tokenGenerator,
 		repository:     repository,
-		securityConfig: cfg,
 	}
 }

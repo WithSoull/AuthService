@@ -13,14 +13,12 @@ import (
 type handler func(ctx context.Context, conn redis.Conn) error
 
 type client struct {
-	pool   *redis.Pool
-	config config.RedisConfig
+	pool *redis.Pool
 }
 
-func NewClient(pool *redis.Pool, config config.RedisConfig) cache.CacheClient {
+func NewClient(pool *redis.Pool) cache.CacheClient {
 	return &client{
-		pool:   pool,
-		config: config,
+		pool: pool,
 	}
 }
 
@@ -122,7 +120,7 @@ func (c *client) execute(ctx context.Context, handler handler) error {
 }
 
 func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
-	getConnTimeoutCtx, cancel := context.WithTimeout(ctx, c.config.ConnTimeout())
+	getConnTimeoutCtx, cancel := context.WithTimeout(ctx, config.AppConfig().Redis.ConnTimeout())
 	defer cancel()
 
 	conn, err := c.pool.GetContext(getConnTimeoutCtx)
@@ -134,4 +132,8 @@ func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
 	}
 
 	return conn, nil
+}
+
+func (c *client) Close(ctx context.Context) error {
+	return c.pool.Close()
 }

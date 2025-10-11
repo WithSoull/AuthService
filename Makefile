@@ -18,6 +18,7 @@ get-deps:
 	go get -u github.com/gomodule/redigo
 	go get -u github.com/gomodule/redigo/redis
 	go get -u github.com/pkg/errors
+	go get -u github.com/caarlos0/env/v11
 	
 
 generate-api:
@@ -37,4 +38,3 @@ rebuild:
 	docker compose down
 	docker compose build --no-cache
 	docker compose up -d
-	docker compose logs -f

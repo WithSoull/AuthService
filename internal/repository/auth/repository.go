@@ -11,12 +11,11 @@ import (
 )
 
 type redisRepository struct {
-	client         cache.CacheClient
-	securityConfig config.SecurityConfig
+	client cache.CacheClient
 }
 
-func NewRedisRepository(client cache.CacheClient, cfg config.SecurityConfig) repository.AuthRepository {
-	return &redisRepository{client: client, securityConfig: cfg}
+func NewRedisRepository(client cache.CacheClient) repository.AuthRepository {
+	return &redisRepository{client: client}
 }
 
 const (
@@ -53,7 +52,7 @@ func (r *redisRepository) IncrementLoginAttempts(ctx context.Context, email stri
 	}
 
 	if count == 1 {
-		r.client.Expire(ctx, r.getKey(email), r.securityConfig.LoginAttemptsWindow())
+		r.client.Expire(ctx, r.getKey(email), config.AppConfig().Security.LoginAttemptsWindow())
 	}
 
 	return count, nil

@@ -1,38 +1,78 @@
 package config
 
 import (
-	"time"
+	"os"
 
+	"github.com/WithSoull/AuthService/internal/config/env"
 	"github.com/joho/godotenv"
 )
 
-func Load(path string) error {
-	if err := godotenv.Load(path); err != nil {
+// appConfig holds the global application configuration instance.
+var appConfig *config
+
+// config represents the complete application configuration.
+type config struct {
+	Logger     LoggerConfig
+	GRPC       GRPCConfig
+	UserClient GRPCConfig
+	Redis      RedisConfig
+	JWT        JWTConfig
+	Security   SecurityConfig
+}
+
+// Load reads environment variables from .env file(s) and initializes the application configuration.
+// The function ignores file-not-found errors, allowing configuration to be loaded
+// from system environment variables when .env file is absent.
+func Load(path ...string) error {
+	err := godotenv.Load(path...)
+	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
+
+	loggerCfg, err := env.NewLoggerConfig()
+	if err != nil {
+		return err
+	}
+
+	grpcCfg, err := env.NewGRPCConfig()
+	if err != nil {
+		return err
+	}
+
+	userClientCfg, err := env.NewUserGRPCConfig()
+	if err != nil {
+		return err
+	}
+
+	redisCfg, err := env.NewRedisConfig()
+	if err != nil {
+		return err
+	}
+
+	jwtCfg, err := env.NewJWTConfig()
+	if err != nil {
+		return err
+	}
+
+	securityCfg, err := env.NewSecurityConfig()
+	if err != nil {
+		return err
+	}
+
+	appConfig = &config{
+		Logger:     loggerCfg,
+		GRPC:       grpcCfg,
+		UserClient: userClientCfg,
+		Redis:      redisCfg,
+		JWT:        jwtCfg,
+		Security:   securityCfg,
+	}
+
 	return nil
 }
 
-type GRPCConfig interface {
-	Address() string
-}
-
-type RedisConfig interface {
-	Address() string
-	MaxIdle() int8
-	ConnTimeout() time.Duration
-	IdleTimeout() time.Duration
-}
-
-type SecurityConfig interface {
-	MaxLoginAttempts() int8
-	LoginAttemptsWindow() time.Duration
-}
-
-type JWTConfig interface {
-	RefreshTokenSecretKey() string
-	AccessTokenSecretKey() string
-
-	RefreshTokenExpiration() time.Duration
-	AccessTokenExpiration() time.Duration
+// AppConfig returns the global application configuration instance.
+// Panics if called before Load().
+func AppConfig() *config {
+	return appConfig
 }

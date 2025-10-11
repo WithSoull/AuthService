@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/WithSoull/AuthService/internal/config"
 	domainerrors "github.com/WithSoull/AuthService/internal/errors/domain"
 	"github.com/WithSoull/AuthService/internal/model"
 	conditions "github.com/WithSoull/AuthService/internal/validator"
@@ -25,7 +26,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 	if err != nil {
 		return "", err
 	}
-	if attempts >= s.securityConfig.MaxLoginAttempts() {
+	if attempts >= config.AppConfig().Security.MaxLoginAttempts() {
 		return "", domainerrors.ErrTooManyAttempts
 	}
 

@@ -14,4 +14,6 @@ type CacheClient interface {
 	Incr(context.Context, string) (any, error)
 	Del(context.Context, string) error
 	Ping(context.Context) error
+
+	Close(context.Context) error
 }

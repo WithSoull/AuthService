@@ -3,17 +3,24 @@ package app
 import (
 	"context"
 	"flag"
-	"log"
 	"net"
+	"syscall"
+	"time"
 
 	"github.com/WithSoull/AuthService/internal/config"
 	desc_auth "github.com/WithSoull/AuthService/pkg/auth/v1"
 	"github.com/WithSoull/platform_common/pkg/closer"
+	"github.com/WithSoull/platform_common/pkg/logger"
 	validationInterceptor "github.com/WithSoull/platform_common/pkg/middleware/validation"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+)
+
+const (
+	shutdownTimeout = 5 * time.Second
 )
 
 var configPath string
@@ -38,18 +45,11 @@ func NewApp(ctx context.Context) (*App, error) {
 	return a, nil
 }
 
-func (a *App) Run() error {
-	defer func() {
-		closer.CloseAll()
-		closer.Wait()
-	}()
-
-	return a.runGRPCServer()
-}
-
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
+		a.initLogger,
+		a.initCloser,
 		a.initServiceProvider,
 		a.initGRPCServer,
 	}
@@ -73,6 +73,15 @@ func (a *App) initConfig(_ context.Context) error {
 	return nil
 }
 
+func (a *App) initLogger(_ context.Context) error {
+	return logger.Init(config.AppConfig().Logger.LogLevel(), config.AppConfig().Logger.AsJSON())
+}
+
+func (a *App) initCloser(_ context.Context) error {
+	closer.Configure(logger.Logger(), shutdownTimeout, syscall.SIGINT, syscall.SIGTERM)
+	return nil
+}
+
 func (a *App) initServiceProvider(_ context.Context) error {
 	a.serviceProvider = newServiceProvider()
 	return nil
@@ -88,6 +97,11 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		),
 	)
 
+	closer.AddNamed("GRPC server", func(ctx context.Context) error {
+		a.grpcServer.GracefulStop()
+		return nil
+	})
+
 	reflection.Register(a.grpcServer)
 
 	desc_auth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthHandler(ctx))
@@ -96,17 +110,22 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) runGRPCServer() error {
-	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
-
-	lis, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
+	lis, err := net.Listen("tcp", config.AppConfig().GRPC.Address())
 	if err != nil {
 		return err
 	}
+
+	logger.Info(context.Background(), "GRPC server listening", zap.String("address", config.AppConfig().GRPC.Address()))
 
 	err = a.grpcServer.Serve(lis)
 	if err != nil {
 		return err
 	}
 
+	logger.Info(context.Background(), "GRPC server stopped gracefully")
 	return nil
+}
+
+func (a *App) Run() error {
+	return a.runGRPCServer()
 }

@@ -1,41 +1,28 @@
 package env
 
 import (
-	"errors"
 	"net"
-	"os"
 
-	"github.com/WithSoull/AuthService/internal/config"
+	"github.com/caarlos0/env/v11"
 )
 
-const (
-	userGrpcHostEnvName = "USER_SERVER_GRPC_HOST"
-	userGrpcPortEnvName = "USER_SERVER_GRPC_PORT"
-)
-
-type userGrpcConfig struct {
-	host string
-	port string
+type userGRPCEnvConfig struct {
+	Host string `env:"USER_SERVER_GRPC_HOST,notEmpty"`
+	Port string `env:"USER_SERVER_GRPC_PORT,notEmpty"`
 }
 
-func NewUserGRPCConfig() (config.GRPCConfig, error) {
-	host := os.Getenv(userGrpcHostEnvName)
-	if len(host) == 0 {
-		return nil, errors.New("grpc host not found")
-	}
-
-	port := os.Getenv(userGrpcPortEnvName)
-	if len(port) == 0 {
-		return nil, errors.New("grpc port not found")
-	}
-
-	return &grpcConfig{
-		host: host,
-		port: port,
-	}, nil
+type userGRPCConfig struct {
+	raw userGRPCEnvConfig
 }
 
-func (cfg *userGrpcConfig) Address() string {
-	address := net.JoinHostPort(cfg.host, cfg.port)
-	return address
+func NewUserGRPCConfig() (*userGRPCConfig, error) {
+	var raw userGRPCEnvConfig
+	if err := env.Parse(&raw); err != nil {
+		return nil, err
+	}
+	return &userGRPCConfig{raw: raw}, nil
+}
+
+func (c *userGRPCConfig) Address() string {
+	return net.JoinHostPort(c.raw.Host, c.raw.Port)
 }

@@ -18,24 +18,21 @@ const (
 )
 
 type JWTService struct {
-	jwtConfig config.JWTConfig
 }
 
-func NewJWTService(jwtConfig config.JWTConfig) *JWTService {
-	return &JWTService{
-		jwtConfig: jwtConfig,
-	}
+func NewJWTService() *JWTService {
+	return &JWTService{}
 }
 
 func (j *JWTService) GenerateAccessToken(info model.UserInfo) (string, error) {
-	secretKey := []byte(j.jwtConfig.AccessTokenSecretKey())
-	duration := j.jwtConfig.AccessTokenExpiration()
+	secretKey := []byte(config.AppConfig().JWT.AccessTokenSecretKey())
+	duration := config.AppConfig().JWT.AccessTokenExpiration()
 	return j.generateToken(info, duration, AccessToken, secretKey)
 }
 
 func (j *JWTService) GenerateRefreshToken(info model.UserInfo) (string, error) {
-	secretKey := []byte(j.jwtConfig.RefreshTokenSecretKey())
-	duration := j.jwtConfig.RefreshTokenExpiration()
+	secretKey := []byte(config.AppConfig().JWT.RefreshTokenSecretKey())
+	duration := config.AppConfig().JWT.RefreshTokenExpiration()
 	return j.generateToken(info, duration, RefreshToken, secretKey)
 }
 
@@ -68,7 +65,7 @@ func (j *JWTService) generateToken(info model.UserInfo, duration time.Duration, 
 }
 
 func (j *JWTService) VerifyAccessToken(tokenStr string) (*model.UserClaims, error) {
-	secretKey := []byte(j.jwtConfig.AccessTokenSecretKey())
+	secretKey := []byte(config.AppConfig().JWT.AccessTokenSecretKey())
 	claims, err := j.verifyToken(tokenStr, secretKey, AccessToken)
 	if err != nil {
 		return nil, fmt.Errorf("access token verification failed: %w", err)
@@ -77,7 +74,7 @@ func (j *JWTService) VerifyAccessToken(tokenStr string) (*model.UserClaims, erro
 }
 
 func (j *JWTService) VerifyRefreshToken(tokenStr string) (*model.UserClaims, error) {
-	secretKey := []byte(j.jwtConfig.RefreshTokenSecretKey())
+	secretKey := []byte(config.AppConfig().JWT.RefreshTokenSecretKey())
 	claims, err := j.verifyToken(tokenStr, secretKey, RefreshToken)
 	if err != nil {
 		return nil, fmt.Errorf("refresh token verification failed: %w", err)

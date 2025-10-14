@@ -2,12 +2,13 @@ package redis
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/WithSoull/AuthService/internal/client/cache"
 	"github.com/WithSoull/AuthService/internal/config"
+	"github.com/WithSoull/platform_common/pkg/logger"
 	"github.com/gomodule/redigo/redis"
+	"go.uber.org/zap"
 )
 
 type handler func(ctx context.Context, conn redis.Conn) error
@@ -112,7 +113,7 @@ func (c *client) execute(ctx context.Context, handler handler) error {
 	defer func() {
 		closeErr := conn.Close()
 		if closeErr != nil {
-			log.Printf("failed to close redis connection: %v\n", closeErr)
+			logger.Error(ctx, "failed to close redis connection with error", zap.Error(err))
 		}
 	}()
 
@@ -125,7 +126,7 @@ func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
 
 	conn, err := c.pool.GetContext(getConnTimeoutCtx)
 	if err != nil {
-		log.Printf("failed to get redis connection: %v\n", err)
+		logger.Error(ctx, "failed to get redis connection", zap.Error(err))
 
 		_ = conn.Close()
 		return nil, err

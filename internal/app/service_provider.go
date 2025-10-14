@@ -125,8 +125,7 @@ func (s *serviceProvider) UserClient(ctx context.Context) desc_user.UserV1Client
 
 		creds := credentials.NewTLS(tlsConfig)
 
-		conn, err := grpc.DialContext(ctx, config.AppConfig().GRPC.Address(),
-			grpc.WithTransportCredentials(creds))
+		conn, err := grpc.DialContext(ctx, config.AppConfig().UserClient.Address(), grpc.WithTransportCredentials(creds))
 		if err != nil {
 			logger.Fatal(ctx, "failed to dial gRPC server", zap.Error(err))
 		}
@@ -135,6 +134,8 @@ func (s *serviceProvider) UserClient(ctx context.Context) desc_user.UserV1Client
 			return conn.Close()
 		})
 
+		logger.Debug(ctx, "Succesfully create UserServer client", zap.Any("connection", conn))
+		s.userClient = desc_user.NewUserV1Client(conn)
 	}
 
 	return s.userClient

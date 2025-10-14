@@ -1,13 +1,15 @@
 package jwt
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/WithSoull/AuthService/internal/config"
 	"github.com/WithSoull/AuthService/internal/model"
+	"github.com/WithSoull/platform_common/pkg/logger"
 	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
 )
 
 type TokenType string
@@ -24,19 +26,19 @@ func NewJWTService() *JWTService {
 	return &JWTService{}
 }
 
-func (j *JWTService) GenerateAccessToken(info model.UserInfo) (string, error) {
+func (j *JWTService) GenerateAccessToken(ctx context.Context, info model.UserInfo) (string, error) {
 	secretKey := []byte(config.AppConfig().JWT.AccessTokenSecretKey())
 	duration := config.AppConfig().JWT.AccessTokenExpiration()
-	return j.generateToken(info, duration, AccessToken, secretKey)
+	return j.generateToken(ctx, info, duration, AccessToken, secretKey)
 }
 
-func (j *JWTService) GenerateRefreshToken(info model.UserInfo) (string, error) {
+func (j *JWTService) GenerateRefreshToken(ctx context.Context, info model.UserInfo) (string, error) {
 	secretKey := []byte(config.AppConfig().JWT.RefreshTokenSecretKey())
 	duration := config.AppConfig().JWT.RefreshTokenExpiration()
-	return j.generateToken(info, duration, RefreshToken, secretKey)
+	return j.generateToken(ctx, info, duration, RefreshToken, secretKey)
 }
 
-func (j *JWTService) generateToken(info model.UserInfo, duration time.Duration, tokenType TokenType, secretKey []byte) (string, error) {
+func (j *JWTService) generateToken(ctx context.Context, info model.UserInfo, duration time.Duration, tokenType TokenType, secretKey []byte) (string, error) {
 	if len(secretKey) == 0 {
 		return "", fmt.Errorf("%s secret key is empty", tokenType)
 	}
@@ -57,32 +59,32 @@ func (j *JWTService) generateToken(info model.UserInfo, duration time.Duration, 
 
 	signedToken, err := token.SignedString(secretKey)
 	if err != nil {
-		log.Printf("failed to sign %s token: %w", tokenType, err)
+		logger.Error(ctx, "failed to sign token", zap.String("tokenType", string(tokenType)), zap.Error(err))
 		return "", fmt.Errorf("failed to sign %s token: %w", tokenType, err)
 	}
 
 	return signedToken, nil
 }
 
-func (j *JWTService) VerifyAccessToken(tokenStr string) (*model.UserClaims, error) {
+func (j *JWTService) VerifyAccessToken(ctx context.Context, tokenStr string) (*model.UserClaims, error) {
 	secretKey := []byte(config.AppConfig().JWT.AccessTokenSecretKey())
-	claims, err := j.verifyToken(tokenStr, secretKey, AccessToken)
+	claims, err := j.verifyToken(ctx, tokenStr, secretKey, AccessToken)
 	if err != nil {
 		return nil, fmt.Errorf("access token verification failed: %w", err)
 	}
 	return claims, nil
 }
 
-func (j *JWTService) VerifyRefreshToken(tokenStr string) (*model.UserClaims, error) {
+func (j *JWTService) VerifyRefreshToken(ctx context.Context, tokenStr string) (*model.UserClaims, error) {
 	secretKey := []byte(config.AppConfig().JWT.RefreshTokenSecretKey())
-	claims, err := j.verifyToken(tokenStr, secretKey, RefreshToken)
+	claims, err := j.verifyToken(ctx, tokenStr, secretKey, RefreshToken)
 	if err != nil {
 		return nil, fmt.Errorf("refresh token verification failed: %w", err)
 	}
 	return claims, nil
 }
 
-func (j *JWTService) verifyToken(tokenStr string, secretKey []byte, expectedType TokenType) (*model.UserClaims, error) {
+func (j *JWTService) verifyToken(ctx context.Context, tokenStr string, secretKey []byte, expectedType TokenType) (*model.UserClaims, error) {
 	if tokenStr == "" {
 		return nil, fmt.Errorf("token string is empty")
 	}
@@ -90,11 +92,11 @@ func (j *JWTService) verifyToken(tokenStr string, secretKey []byte, expectedType
 	token, err := jwt.ParseWithClaims(
 		tokenStr,
 		&model.UserClaims{},
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				err := fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-				log.Printf("[JWTService] failed to verifyToken: %v", err)
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+				logger.Info(context.Background(), "unexpected signing method", zap.Error(err))
+				return nil, err
 			}
 			return secretKey, nil
 		},

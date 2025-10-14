@@ -2,17 +2,21 @@ package auth
 
 import (
 	"context"
-	"log"
 
 	"github.com/WithSoull/AuthService/internal/config"
 	domainerrors "github.com/WithSoull/AuthService/internal/errors/domain"
 	"github.com/WithSoull/AuthService/internal/model"
 	conditions "github.com/WithSoull/AuthService/internal/validator"
 	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
+	"github.com/WithSoull/platform_common/pkg/contextx/claimsctx"
+	"github.com/WithSoull/platform_common/pkg/logger"
 	"github.com/WithSoull/platform_common/pkg/sys/validate"
+	"go.uber.org/zap"
 )
 
 func (s *authService) Login(ctx context.Context, email, password string) (string, error) {
+	ctx = claimsctx.InjectUserEmail(ctx, email)
+
 	err := validate.Validate(
 		ctx,
 		conditions.ValidateNotEmptyEmailAndPassword(email, password),
@@ -40,6 +44,8 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 		return "", err
 	}
 
+	ctx = claimsctx.InjectUserID(ctx, res.UserId)
+
 	if !res.Valid {
 		s.repository.IncrementLoginAttempts(ctx, email)
 		return "", domainerrors.ErrInvalidEmailOrPassword
@@ -47,16 +53,16 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 
 	// Reset attempts counter
 	if err := s.repository.ResetLoginAttempts(ctx, email); err != nil {
-		log.Printf("[Service Layer] failed to resert login attempts for %s: %v", email, err)
+		logger.Error(ctx, "failed to resert login attempts", zap.Error(err))
 	}
 
 	// Create refresh_token
-	refresh_token, err := s.tokenGenerator.GenerateRefreshToken(model.UserInfo{
+	refresh_token, err := s.tokenGenerator.GenerateRefreshToken(ctx, model.UserInfo{
 		UserId: res.GetUserId(),
 		Email:  email,
 	})
 	if err != nil {
-		log.Printf("[Service Layer] failed to generate refresh token: %v", err)
+		logger.Error(ctx, "failed to generate refresh token", zap.Error(err))
 		return "", err
 	}
 

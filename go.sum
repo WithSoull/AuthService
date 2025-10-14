@@ -4,6 +4,8 @@ github.com/WithSoull/UserServer v0.0.0-20251010180624-578307a91f93 h1:ep1JyhwWvu
 github.com/WithSoull/UserServer v0.0.0-20251010180624-578307a91f93/go.mod h1:tJF9MRq0HDwkxL4MOnQl03ATJlfUiKfVgl7jBgldeFY=
 github.com/WithSoull/platform_common v0.0.0-20251011124932-58ae027709d5 h1:3s1GLF0Wh2Ge8oOUYoiHKifVWW87fH9r7x439/ie82Q=
 github.com/WithSoull/platform_common v0.0.0-20251011124932-58ae027709d5/go.mod h1:e2wngqCcH6upexYELub1r3F+qD6fuWtFY8gXifSQ+fc=
+github.com/WithSoull/platform_common v1.0.0 h1:I+hpiJUAVFYzQfzQ+23ZpCO4ltaSfV5k3bJ3Xg0RzqY=
+github.com/WithSoull/platform_common v1.0.0/go.mod h1:e2wngqCcH6upexYELub1r3F+qD6fuWtFY8gXifSQ+fc=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/caarlos0/env/v11 v11.3.1 h1:cArPWC15hWmEt+gWk7YBi7lEXTXCvpaSdCiZE2X5mCA=
 github.com/caarlos0/env/v11 v11.3.1/go.mod h1:qupehSf/Y0TUTsxKywqRt/vJjN5nz6vauiYEUUr8P4U=

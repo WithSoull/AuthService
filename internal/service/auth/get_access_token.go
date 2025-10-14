@@ -8,12 +8,12 @@ import (
 )
 
 func (s *authService) GetAccessToken(ctx context.Context, refresh_token string) (string, error) {
-	claims, err := s.tokenGenerator.VerifyRefreshToken(refresh_token)
+	claims, err := s.tokenGenerator.VerifyRefreshToken(ctx, refresh_token)
 	if err != nil {
 		return "", domainerrors.ErrInvalidRefreshToken
 	}
 
-	new_access_token, err := s.tokenGenerator.GenerateAccessToken(model.UserInfo{
+	new_access_token, err := s.tokenGenerator.GenerateAccessToken(ctx, model.UserInfo{
 		UserId: claims.UserId,
 		Email:  claims.Email,
 	})

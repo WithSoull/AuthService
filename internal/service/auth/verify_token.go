@@ -5,7 +5,7 @@ import (
 )
 
 func (s *authService) ValidateToken(ctx context.Context, token string) error {
-	_, err := s.tokenGenerator.VerifyAccessToken(token)
+	_, err := s.tokenGenerator.VerifyAccessToken(ctx, token)
 	if err != nil {
 		return err
 	}

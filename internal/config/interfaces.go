@@ -32,3 +32,10 @@ type JWTConfig interface {
 	RefreshTokenExpiration() time.Duration
 	AccessTokenExpiration() time.Duration
 }
+
+type TracingConfig interface {
+	CollectorEndpoint() string
+	ServiceName() string
+	Environment() string
+	ServiceVersion() string
+}

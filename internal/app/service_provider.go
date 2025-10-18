@@ -8,6 +8,8 @@ import (
 
 	"github.com/WithSoull/AuthService/internal/client/cache"
 	redis_client "github.com/WithSoull/AuthService/internal/client/cache/redis"
+	grpc_clients "github.com/WithSoull/AuthService/internal/client/grpc"
+	userClient "github.com/WithSoull/AuthService/internal/client/grpc/user"
 	"github.com/WithSoull/AuthService/internal/config"
 	handler_auth "github.com/WithSoull/AuthService/internal/handler/auth"
 	"github.com/WithSoull/AuthService/internal/repository"
@@ -21,6 +23,7 @@ import (
 	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
 	"github.com/WithSoull/platform_common/pkg/closer"
 	"github.com/WithSoull/platform_common/pkg/logger"
+	"github.com/WithSoull/platform_common/pkg/tracing"
 	"github.com/gomodule/redigo/redis"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -42,7 +45,7 @@ type serviceProvider struct {
 	tokenGenerator tokens.TokenGenerator
 
 	redisPool  *redis.Pool
-	userClient desc_user.UserV1Client
+	userClient grpc_clients.UserClient
 }
 
 func newServiceProvider() *serviceProvider {
@@ -106,7 +109,7 @@ func (s *serviceProvider) TokenGenerator(ctx context.Context) tokens.TokenGenera
 	return s.tokenGenerator
 }
 
-func (s *serviceProvider) UserClient(ctx context.Context) desc_user.UserV1Client {
+func (s *serviceProvider) UserClient(ctx context.Context) grpc_clients.UserClient {
 	if s.userClient == nil {
 		caCert, err := os.ReadFile("ca.cert")
 		if err != nil {
@@ -125,9 +128,15 @@ func (s *serviceProvider) UserClient(ctx context.Context) desc_user.UserV1Client
 
 		creds := credentials.NewTLS(tlsConfig)
 
-		conn, err := grpc.DialContext(ctx, config.AppConfig().UserClient.Address(), grpc.WithTransportCredentials(creds))
+		conn, err := grpc.NewClient(
+			config.AppConfig().UserClient.Address(),
+			grpc.WithTransportCredentials(creds),
+			grpc.WithUnaryInterceptor(
+				tracing.UnaryClientInterceptor("user-server-client"),
+			),
+		)
 		if err != nil {
-			logger.Fatal(ctx, "failed to dial gRPC server", zap.Error(err))
+			logger.Fatal(ctx, "failed to create userClient connection", zap.Error(err))
 		}
 
 		closer.AddNamed("UserClientGRPC", func(ctx context.Context) error {
@@ -135,7 +144,8 @@ func (s *serviceProvider) UserClient(ctx context.Context) desc_user.UserV1Client
 		})
 
 		logger.Debug(ctx, "Succesfully create UserServer client", zap.Any("connection", conn))
-		s.userClient = desc_user.NewUserV1Client(conn)
+		protoClient := desc_user.NewUserV1Client(conn)
+		s.userClient = userClient.NewClient(protoClient)
 	}
 
 	return s.userClient

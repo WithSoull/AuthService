@@ -7,10 +7,11 @@ import (
 	domainerrors "github.com/WithSoull/AuthService/internal/errors/domain"
 	"github.com/WithSoull/AuthService/internal/model"
 	conditions "github.com/WithSoull/AuthService/internal/validator"
-	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
 	"github.com/WithSoull/platform_common/pkg/contextx/claimsctx"
 	"github.com/WithSoull/platform_common/pkg/logger"
 	"github.com/WithSoull/platform_common/pkg/sys/validate"
+	"github.com/WithSoull/platform_common/pkg/tracing"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
@@ -35,16 +36,23 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 	}
 
 	// Check credentials
-	res, err := s.userClient.ValidateCredentials(ctx, &desc_user.ValidateCredentialsRequest{
-		Email:    email,
-		Password: password,
-	})
+	spanName := "user.ValidateCredentials"
+	ctx, userSpan := tracing.StartSpan(ctx, spanName)
+	res, err := s.userClient.ValidateCredentials(ctx, email, password)
 	if err != nil {
+		userSpan.RecordError(err)
+		userSpan.End()
 		s.repository.IncrementLoginAttempts(ctx, email)
 		return "", err
 	}
+	userSpan.SetAttributes(
+		attribute.String("email", email),
+		attribute.Int("attempts", int(attempts)),
+	)
 
-	ctx = claimsctx.InjectUserID(ctx, res.UserId)
+	userSpan.End()
+
+	ctx = claimsctx.InjectUserID(ctx, res.UserID)
 
 	if !res.Valid {
 		s.repository.IncrementLoginAttempts(ctx, email)
@@ -58,7 +66,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 
 	// Create refresh_token
 	refresh_token, err := s.tokenGenerator.GenerateRefreshToken(ctx, model.UserInfo{
-		UserId: res.GetUserId(),
+		UserId: res.UserID,
 		Email:  email,
 	})
 	if err != nil {

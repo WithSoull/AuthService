@@ -19,6 +19,7 @@ type config struct {
 	JWT        JWTConfig
 	Security   SecurityConfig
 	Tracing    TracingConfig
+	Metrics    MetricsConfig
 }
 
 // Load reads environment variables from .env file(s) and initializes the application configuration.
@@ -65,6 +66,11 @@ func Load(path ...string) error {
 		return err
 	}
 
+	metricsCfg, err := env.NewMetricsConfig()
+	if err != nil {
+		return err
+	}
+
 	appConfig = &config{
 		Logger:     loggerCfg,
 		GRPC:       grpcCfg,
@@ -72,6 +78,7 @@ func Load(path ...string) error {
 		Redis:      redisCfg,
 		JWT:        jwtCfg,
 		Security:   securityCfg,
+		Metrics:    metricsCfg,
 		Tracing:    tracingCfg,
 	}
 

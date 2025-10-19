@@ -43,3 +43,11 @@ type TracingConfig interface {
 	Environment() string
 	ServiceVersion() string
 }
+
+type MetricsConfig interface {
+	ServiceName() string
+	ServiceVersion() string
+	OTLPEndpoint() string
+	ServiceEnvironment() string
+	PushTimeout() time.Duration
+}

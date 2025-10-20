@@ -13,6 +13,7 @@ import (
 	"github.com/WithSoull/platform_common/pkg/logger"
 	"github.com/WithSoull/platform_common/pkg/metric"
 	metricsInterceptor "github.com/WithSoull/platform_common/pkg/middleware/metrics"
+	rateLimiterInterceptor "github.com/WithSoull/platform_common/pkg/middleware/rate-limiter"
 	validationInterceptor "github.com/WithSoull/platform_common/pkg/middleware/validation"
 	"github.com/WithSoull/platform_common/pkg/tracing"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -112,6 +113,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		grpc.Creds(insecure.NewCredentials()),
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
+				rateLimiterInterceptor.NewRateLimiterInterceptor(ctx, config.AppConfig().RateLimiter).Unary,
 				metricsInterceptor.MetricsInterceptor,
 				validationInterceptor.ErrorCodesInterceptor(logger.Logger()),
 				tracing.UnaryServerInterceptor(config.AppConfig().Tracing.ServiceName()),

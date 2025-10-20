@@ -12,14 +12,15 @@ var appConfig *config
 
 // config represents the complete application configuration.
 type config struct {
-	Logger     LoggerConfig
-	GRPC       GRPCConfig
-	UserClient GRPCConfig
-	Redis      RedisConfig
-	JWT        JWTConfig
-	Security   SecurityConfig
-	Tracing    TracingConfig
-	Metrics    MetricsConfig
+	Logger      LoggerConfig
+	GRPC        GRPCConfig
+	UserClient  GRPCConfig
+	Redis       RedisConfig
+	JWT         JWTConfig
+	Security    SecurityConfig
+	Tracing     TracingConfig
+	Metrics     MetricsConfig
+	RateLimiter RateLimiterConfig
 }
 
 // Load reads environment variables from .env file(s) and initializes the application configuration.
@@ -71,15 +72,21 @@ func Load(path ...string) error {
 		return err
 	}
 
+	rateLimiterCfg, err := env.NewRateLimiterConfig()
+	if err != nil {
+		return err
+	}
+
 	appConfig = &config{
-		Logger:     loggerCfg,
-		GRPC:       grpcCfg,
-		UserClient: userClientCfg,
-		Redis:      redisCfg,
-		JWT:        jwtCfg,
-		Security:   securityCfg,
-		Metrics:    metricsCfg,
-		Tracing:    tracingCfg,
+		Logger:      loggerCfg,
+		GRPC:        grpcCfg,
+		UserClient:  userClientCfg,
+		Redis:       redisCfg,
+		JWT:         jwtCfg,
+		Security:    securityCfg,
+		Metrics:     metricsCfg,
+		Tracing:     tracingCfg,
+		RateLimiter: rateLimiterCfg,
 	}
 
 	return nil

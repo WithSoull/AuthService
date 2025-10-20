@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/WithSoull/UserServer v0.0.0-20251010180624-578307a91f93
-	github.com/WithSoull/platform_common v1.3.1
+	github.com/WithSoull/platform_common v1.4.3
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/gomodule/redigo v1.9.3

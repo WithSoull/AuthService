@@ -2,8 +2,8 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/WithSoull/UserServer v0.0.0-20251010180624-578307a91f93 h1:ep1JyhwWvuyjyKRXjY+TKEn0LIPjhWffbyBV/KG4ij0=
 github.com/WithSoull/UserServer v0.0.0-20251010180624-578307a91f93/go.mod h1:tJF9MRq0HDwkxL4MOnQl03ATJlfUiKfVgl7jBgldeFY=
-github.com/WithSoull/platform_common v1.3.1 h1:zYX1tqN2zcHIT/2UZOMu/ZONyVQA6Fu0C0+1vZBYjmo=
-github.com/WithSoull/platform_common v1.3.1/go.mod h1:XQpPhNE5MUMYIvrRfeh1BWJzSfPqtk3FpL48C34atmA=
+github.com/WithSoull/platform_common v1.4.3 h1:kFn6aGexFAELvi2Wa1SAod8LAiyi+MjzhBy4aWKEKDs=
+github.com/WithSoull/platform_common v1.4.3/go.mod h1:XQpPhNE5MUMYIvrRfeh1BWJzSfPqtk3FpL48C34atmA=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/caarlos0/env/v11 v11.3.1 h1:cArPWC15hWmEt+gWk7YBi7lEXTXCvpaSdCiZE2X5mCA=
 github.com/caarlos0/env/v11 v11.3.1/go.mod h1:qupehSf/Y0TUTsxKywqRt/vJjN5nz6vauiYEUUr8P4U=

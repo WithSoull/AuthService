@@ -4,7 +4,7 @@ services:
     ports:
       - "${GRPC_PORT}:${GRPC_PORT}"
     networks:
-      - messenger-network
+      - messanger-network
     restart: unless-stopped
 
   redis:
@@ -13,8 +13,8 @@ services:
     ports:
       - "${CACHE_PORT}:${CACHE_PORT}"
     networks:
-      - messenger-network
+      - messanger-network
 
 networks:
-  messenger-network:
+  messanger-network:
     external: true

@@ -5,20 +5,20 @@ import (
 	"github.com/WithSoull/AuthService/internal/config"
 	"github.com/WithSoull/AuthService/internal/repository"
 	"github.com/WithSoull/AuthService/internal/service"
-	"github.com/WithSoull/AuthService/internal/tokens"
+	"github.com/WithSoull/platform_common/pkg/tokens"
 )
 
 type authService struct {
 	userClient     grpc.UserClient
-	tokenGenerator tokens.TokenGenerator
+	tokenService   tokens.TokenService
 	repository     repository.AuthRepository
 	securityConfig config.SecurityConfig
 }
 
-func NewService(userClient grpc.UserClient, tokenGenerator tokens.TokenGenerator, repository repository.AuthRepository) service.AuthService {
+func NewService(userClient grpc.UserClient, tokenService tokens.TokenService, repository repository.AuthRepository) service.AuthService {
 	return &authService{
-		userClient:     userClient,
-		tokenGenerator: tokenGenerator,
-		repository:     repository,
+		userClient:   userClient,
+		tokenService: tokenService,
+		repository:   repository,
 	}
 }

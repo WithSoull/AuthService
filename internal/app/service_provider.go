@@ -16,13 +16,13 @@ import (
 	"github.com/WithSoull/AuthService/internal/repository/auth"
 	"github.com/WithSoull/AuthService/internal/service"
 	service_auth "github.com/WithSoull/AuthService/internal/service/auth"
-	"github.com/WithSoull/AuthService/internal/tokens"
-	"github.com/WithSoull/AuthService/internal/tokens/jwt"
 	access_v1 "github.com/WithSoull/AuthService/pkg/access/v1"
 	auth_v1 "github.com/WithSoull/AuthService/pkg/auth/v1"
 	desc_user "github.com/WithSoull/UserServer/pkg/user/v1"
 	"github.com/WithSoull/platform_common/pkg/closer"
 	"github.com/WithSoull/platform_common/pkg/logger"
+	"github.com/WithSoull/platform_common/pkg/tokens"
+	"github.com/WithSoull/platform_common/pkg/tokens/jwt"
 	"github.com/WithSoull/platform_common/pkg/tracing"
 	"github.com/gomodule/redigo/redis"
 	"go.uber.org/zap"
@@ -42,7 +42,7 @@ type serviceProvider struct {
 	authRepository repository.AuthRepository
 	cacheClient    cache.CacheClient
 
-	tokenGenerator tokens.TokenGenerator
+	tokenService tokens.TokenService
 
 	redisPool  *redis.Pool
 	userClient grpc_clients.UserClient
@@ -90,7 +90,7 @@ func (s *serviceProvider) AuthRepository() repository.AuthRepository {
 
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
-		s.authService = service_auth.NewService(s.UserClient(ctx), s.TokenGenerator(ctx), s.AuthRepository())
+		s.authService = service_auth.NewService(s.UserClient(ctx), s.TokenService(ctx), s.AuthRepository())
 	}
 	return s.authService
 }
@@ -102,11 +102,11 @@ func (s *serviceProvider) AuthHandler(ctx context.Context) auth_v1.AuthV1Server 
 	return s.authHandler
 }
 
-func (s *serviceProvider) TokenGenerator(ctx context.Context) tokens.TokenGenerator {
-	if s.tokenGenerator == nil {
-		s.tokenGenerator = jwt.NewJWTService()
+func (s *serviceProvider) TokenService(ctx context.Context) tokens.TokenService {
+	if s.tokenService == nil {
+		s.tokenService = jwt.NewJWTService(config.AppConfig().JWT)
 	}
-	return s.tokenGenerator
+	return s.tokenService
 }
 
 func (s *serviceProvider) UserClient(ctx context.Context) grpc_clients.UserClient {

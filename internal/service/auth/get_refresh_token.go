@@ -12,7 +12,7 @@ import (
 )
 
 func (s *authService) GetRefreshToken(ctx context.Context, old_refresh_token string) (string, error) {
-	claims, err := s.tokenGenerator.VerifyRefreshToken(ctx, old_refresh_token)
+	claims, err := s.tokenService.VerifyRefreshToken(ctx, old_refresh_token)
 	if err != nil {
 		return "", sys.NewCommonError("ivalid refresh token", codes.Unauthenticated)
 	}
@@ -20,7 +20,7 @@ func (s *authService) GetRefreshToken(ctx context.Context, old_refresh_token str
 	ctx = claimsctx.InjectUserEmail(ctx, claims.Email)
 	ctx = claimsctx.InjectUserID(ctx, claims.UserId)
 
-	new_refresh_token, err := s.tokenGenerator.GenerateRefreshToken(ctx, model.UserInfo{
+	new_refresh_token, err := s.tokenService.GenerateRefreshToken(ctx, model.UserInfo{
 		UserId: claims.UserId,
 		Email:  claims.Email,
 	})

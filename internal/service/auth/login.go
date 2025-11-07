@@ -65,7 +65,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 	}
 
 	// Create refresh_token
-	refresh_token, err := s.tokenGenerator.GenerateRefreshToken(ctx, model.UserInfo{
+	refresh_token, err := s.tokenService.GenerateRefreshToken(ctx, model.UserInfo{
 		UserId: res.UserID,
 		Email:  email,
 	})

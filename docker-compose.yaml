@@ -9,9 +9,9 @@ services:
 
   redis:
     image: redis:7.2.5-alpine3.20
-    container_name: redis-container
+    container_name: redis-auth-ratelimiter
     ports:
-      - "${CACHE_PORT}:${CACHE_PORT}"
+      - "${EXTERNAL_CACHE_PORT}:${INTERNAL_CACHE_PORT}"
     networks:
       - messanger-network
 

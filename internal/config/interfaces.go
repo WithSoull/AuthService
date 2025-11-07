@@ -18,7 +18,8 @@ type LoggerConfig interface {
 }
 
 type RedisConfig interface {
-	Address() string
+	ExternalAddress() string
+	InternalAddress() string
 	MaxIdle() int8
 	ConnTimeout() time.Duration
 	IdleTimeout() time.Duration

@@ -58,7 +58,7 @@ func (s *serviceProvider) RedisPool() *redis.Pool {
 			MaxIdle:     int(config.AppConfig().Redis.MaxIdle()),
 			IdleTimeout: config.AppConfig().Redis.IdleTimeout(),
 			DialContext: func(ctx context.Context) (redis.Conn, error) {
-				return redis.DialContext(ctx, "tcp", config.AppConfig().Redis.Address())
+				return redis.DialContext(ctx, "tcp", config.AppConfig().Redis.InternalAddress())
 			},
 		}
 
